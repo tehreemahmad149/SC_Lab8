@@ -4,83 +4,169 @@
 package graph;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * An implementation of Graph.
- * 
- * <p>PS2 instructions: you MUST use the provided rep.
- */
 public class ConcreteVerticesGraph implements Graph<String> {
     
     private final List<Vertex> vertices = new ArrayList<>();
+  
     
-    // Abstraction function:
-    //   TODO
-    // Representation invariant:
-    //   TODO
-    // Safety from rep exposure:
-    //   TODO
-    
-    // TODO constructor
-    
-    // TODO checkRep
+    public ConcreteVerticesGraph() {
+        checkRep();
+    }
+
+    private void checkRep() {
+        assert vertices != null;
+        Set<String> labels = new HashSet<>();
+        for (Vertex vertex : vertices) {
+            assert vertex != null;
+            assert vertex.getLabel() != null;
+            assert !labels.contains(vertex.getLabel());
+            labels.add(vertex.getLabel());
+            for (int weight : vertex.getTargets().values()) {
+                assert weight >= 0;
+            }
+        }
+    }
     
     @Override public boolean add(String vertex) {
-        throw new RuntimeException("not implemented");
+    	if (vertex == null) return false;
+        for (Vertex v : vertices) {
+            if (v.getLabel().equals(vertex)) {
+                return false;
+            }
+        }
+        vertices.add(new Vertex(vertex));
+        checkRep();
+        return true;
     }
     
     @Override public int set(String source, String target, int weight) {
-        throw new RuntimeException("not implemented");
+    	if (source == null || target == null || weight < 0) {
+            throw new IllegalArgumentException("Invalid source, target, or weight.");
+        }
+
+        add(source);
+        add(target);
+
+        Vertex sourceVertex = getVertex(source);
+        int previousWeight = sourceVertex.setTarget(target, weight);
+
+        checkRep();
+        return previousWeight;
     }
     
     @Override public boolean remove(String vertex) {
-        throw new RuntimeException("not implemented");
+    	 if (vertex == null) return false;
+         Vertex toRemove = getVertex(vertex);
+         if (toRemove == null) return false;
+
+         vertices.remove(toRemove);
+         for (Vertex v : vertices) {
+             v.setTarget(vertex, 0);
+         }
+
+         checkRep();
+         return true;
     }
     
     @Override public Set<String> vertices() {
-        throw new RuntimeException("not implemented");
+    	Set<String> vertexLabels = new HashSet<>();
+        for (Vertex v : vertices) {
+            vertexLabels.add(v.getLabel());
+        }
+        return Collections.unmodifiableSet(vertexLabels);
     }
     
     @Override public Map<String, Integer> sources(String target) {
-        throw new RuntimeException("not implemented");
+    	Map<String, Integer> result = new HashMap<>();
+        for (Vertex v : vertices) {
+            Integer weight = v.getTargets().get(target);
+            if (weight != null && weight > 0) {
+                result.put(v.getLabel(), weight);
+            }
+        }
+        return Collections.unmodifiableMap(result);
     }
     
     @Override public Map<String, Integer> targets(String source) {
-        throw new RuntimeException("not implemented");
+    	 Vertex vertex = getVertex(source);
+         if (vertex == null) {
+             return Collections.emptyMap();
+         }
+         return Collections.unmodifiableMap(new HashMap<>(vertex.getTargets()));
     }
     
-    // TODO toString()
-    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Graph:\n");
+        for (Vertex v : vertices) {
+            sb.append(v.toString()).append("\n");
+        }
+        return sb.toString();
+    }
+    //get vertex label
+    private Vertex getVertex(String label) {
+        for (Vertex v : vertices) {
+            if (v.getLabel().equals(label)) {
+                return v;
+            }
+        }
+        return null;
+    }
 }
-
-/**
- * TODO specification
- * Mutable.
- * This class is internal to the rep of ConcreteVerticesGraph.
- * 
- * <p>PS2 instructions: the specification and implementation of this class is
- * up to you.
- */
 class Vertex {
+	 private final String label;
+	    private final Map<String, Integer> targets = new HashMap<>();
     
-    // TODO fields
-    
-    // Abstraction function:
-    //   TODO
-    // Representation invariant:
-    //   TODO
-    // Safety from rep exposure:
-    //   TODO
-    
-    // TODO constructor
-    
-    // TODO checkRep
-    
-    // TODO methods
-    
-    // TODO toString()
+	    public Vertex(String label) {
+	        if (label == null) {
+	            throw new IllegalArgumentException("Label cannot be null.");
+	        }
+	        this.label = label;
+	        checkRep();
+	    }
+
+	    // Check representation invariant
+	    private void checkRep() {
+	        assert label != null;
+	        for (Map.Entry<String, Integer> entry : targets.entrySet()) {
+	            assert entry.getKey() != null;
+	            assert entry.getValue() != null && entry.getValue() >= 0;
+	        }
+	    }
+
+	    public String getLabel() {
+	        return label;
+	    }
+
+	    public Map<String, Integer> getTargets() {
+	        return Collections.unmodifiableMap(targets);
+	    }
+
+	    public int setTarget(String target, int weight) {
+	        if (weight < 0) {
+	            throw new IllegalArgumentException("Weight cannot be negative.");
+	        }
+
+	        Integer previousWeight = targets.get(target);
+	        if (weight == 0) {
+	            targets.remove(target);
+	        } else {
+	            targets.put(target, weight);
+	        }
+	        checkRep();
+	        return previousWeight == null ? 0 : previousWeight;
+	    }
+
+	    @Override
+	    public String toString() {
+	        return label + " -> " + targets.toString();
+	    }
     
 }
