@@ -11,12 +11,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class ConcreteVerticesGraph implements Graph<String> {
+public class ConcreteVerticesGraph implements Graph<String> {//using string labels only
     
     private final List<Vertex> vertices = new ArrayList<>();
   
     
-    public ConcreteVerticesGraph() {
+    public ConcreteVerticesGraph() {//constructor to run checking function
         checkRep();
     }
 
@@ -42,13 +42,13 @@ public class ConcreteVerticesGraph implements Graph<String> {
             }
         }
         vertices.add(new Vertex(vertex));
-        checkRep();
+        checkRep();//calling checkrep() after every function
         return true;
     }
     
     @Override public int set(String source, String target, int weight) {
     	if (source == null || target == null || weight < 0) {
-            throw new IllegalArgumentException("Invalid source, target, or weight.");
+            throw new IllegalArgumentException("Invalid source, target, or weight.");//java exception collection
         }
 
         add(source);
@@ -62,7 +62,7 @@ public class ConcreteVerticesGraph implements Graph<String> {
     }
     
     @Override public boolean remove(String vertex) {
-    	 if (vertex == null) return false;
+    	 if (vertex == null) return false;//invalid vertex
          Vertex toRemove = getVertex(vertex);
          if (toRemove == null) return false;
 
@@ -78,7 +78,7 @@ public class ConcreteVerticesGraph implements Graph<String> {
     @Override public Set<String> vertices() {
     	Set<String> vertexLabels = new HashSet<>();
         for (Vertex v : vertices) {
-            vertexLabels.add(v.getLabel());
+            vertexLabels.add(v.getLabel());//using helper function to assign labels
         }
         return Collections.unmodifiableSet(vertexLabels);
     }
@@ -91,7 +91,7 @@ public class ConcreteVerticesGraph implements Graph<String> {
                 result.put(v.getLabel(), weight);
             }
         }
-        return Collections.unmodifiableMap(result);
+        return Collections.unmodifiableMap(result);//immutable
     }
     
     @Override public Map<String, Integer> targets(String source) {
@@ -120,6 +120,19 @@ public class ConcreteVerticesGraph implements Graph<String> {
         return null;
     }
 }
+
+
+/* Rep Invariant:
+	
+ label is non-null.
+ targets map must not contain null keys or values; weights must be non-negative.
+ 
+ 
+ 
+ Safety from Rep Exposure:
+ label is final, and targets map is private.
+ getTargets() returns an unmodifiable view
+ */
 class Vertex {
 	 private final String label;
 	    private final Map<String, Integer> targets = new HashMap<>();
@@ -131,8 +144,6 @@ class Vertex {
 	        this.label = label;
 	        checkRep();
 	    }
-
-	    // Check representation invariant
 	    private void checkRep() {
 	        assert label != null;
 	        for (Map.Entry<String, Integer> entry : targets.entrySet()) {
@@ -140,7 +151,7 @@ class Vertex {
 	            assert entry.getValue() != null && entry.getValue() >= 0;
 	        }
 	    }
-
+	    //class methods basic implementation
 	    public String getLabel() {
 	        return label;
 	    }
@@ -150,7 +161,7 @@ class Vertex {
 	    }
 
 	    public int setTarget(String target, int weight) {
-	        if (weight < 0) {
+	        if (weight < 0) {//validation
 	            throw new IllegalArgumentException("Weight cannot be negative.");
 	        }
 

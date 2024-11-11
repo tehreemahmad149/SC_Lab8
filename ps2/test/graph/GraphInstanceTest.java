@@ -59,7 +59,7 @@ public abstract class GraphInstanceTest {
     
     @Test
     public void testRemoveValidVertex() {//removing existing vertex
-        Graph<String> graph = new ConcreteVerticesGraph();
+        Graph<String> graph = emptyInstance();
         graph.add("A");
         graph.add("B");
         graph.set("A", "B", 10);
@@ -71,7 +71,7 @@ public abstract class GraphInstanceTest {
 
     @Test
     public void testRemoveNonExistentVertex() {///removing a vertex that did not exist
-    	Graph<String> graph = new ConcreteVerticesGraph();
+    	Graph<String> graph =emptyInstance();
         graph.add("A");
         
         assertFalse("Removing non-existent vertex should return false", graph.remove("B"));
@@ -79,7 +79,7 @@ public abstract class GraphInstanceTest {
 
     @Test
     public void testRemoveEdgeWhenVertexRemoved() {//remove edge but do not remove the vertex associated on the other end
-    	Graph<String> graph = new ConcreteVerticesGraph();
+    	Graph<String> graph = emptyInstance();
         graph.add("A");
         graph.add("B");
         graph.set("A", "B", 5);
@@ -91,7 +91,7 @@ public abstract class GraphInstanceTest {
 
     @Test
     public void testRemoveEdgeExplicitly() {
-    	Graph<String> graph = new ConcreteEdgesGraph();
+    	Graph<String> graph = emptyInstance();
         graph.add("P");
         graph.add("Q");
         graph.set("P", "Q", 30);
@@ -99,7 +99,5 @@ public abstract class GraphInstanceTest {
         assertEquals("Edge from P to Q should exist with weight 30", 30, graph.set("P", "Q", 0));
         assertEquals("Removing the edge should return previous weight", 0, graph.set("P", "Q", 0));
     }
-    
-    // TODO other tests for instance methods of Graph
     
 }

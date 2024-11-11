@@ -15,27 +15,18 @@ import java.util.Set;
  * An implementation of Graph.
  * 
  * <p>PS2 instructions: you MUST use the provided rep.
+ * Used below
  */
 public class ConcreteEdgesGraph implements Graph<String> {
     
     private final Set<String> vertices = new HashSet<>();
     private final List<Edge> edges = new ArrayList<>();
-    
-    // Abstraction function:
-    //   TODO
-    // Representation invariant:
-    //   TODO
-    // Safety from rep exposure:
-    //   TODO
-    
-    // TODO constructor
-    
-    // TODO checkRep
+   
     public ConcreteEdgesGraph() {
-        checkRep();
+        confirmrep();
     }
 
-    private void checkRep() {
+    private void confirmrep() {
         assert vertices != null;
         assert edges != null;
         for (Edge edge : edges) {
@@ -46,16 +37,19 @@ public class ConcreteEdgesGraph implements Graph<String> {
       
         }
     }
-    @Override public boolean add(String vertex) {
+    @Override 
+    public boolean add(String vertex) {
     	if (vertex == null || vertices.contains(vertex)) {
             return false;
         }
         boolean added = vertices.add(vertex);
-        checkRep();
+        confirmrep();
         return added;
     }
     
-    @Override public int set(String source, String target, int weight) {
+    @Override 
+    public int set(String source, String target, int weight) {
+    	//validity checks 
     	if (source == null || target == null) {
             throw new IllegalArgumentException("Source or target cannot be null.");
         }
@@ -67,6 +61,7 @@ public class ConcreteEdgesGraph implements Graph<String> {
         add(target);
 
         for (Edge edge : edges) {
+        	//casting for the class below
             if (((Edge) edge).source().equals(source) && edge.target().equals(target)) {
                 int oldWeight = edge.weight();
                 if (weight == 0) {
@@ -75,34 +70,37 @@ public class ConcreteEdgesGraph implements Graph<String> {
                     edges.remove(edge);
                     edges.add(new Edge(source, target, weight));
                 }
-                checkRep();
+                confirmrep();
                 return oldWeight;
             }
         }
 
-        if (weight > 0) {
+        if (weight > 0) {//confirmed additon
             edges.add(new Edge(source, target, weight));
         }
-        checkRep();
+        confirmrep();
         return 0;
     }
     
-    @Override public boolean remove(String vertex) {
+    @Override 
+    public boolean remove(String vertex) {
     	if (vertex == null || !vertices.contains(vertex)) {
             return false;
         }
 
         vertices.remove(vertex);
         edges.removeIf(edge -> edge.source().equals(vertex) || edge.target().equals(vertex));
-        checkRep();
+        confirmrep();
         return true;
     }
     
-    @Override public Set<String> vertices() {
-    	return Collections.unmodifiableSet(new HashSet<>(vertices));
+    @Override 
+    public Set<String> vertices() {
+    	return Collections.unmodifiableSet(new HashSet<>(vertices));//immutable
     }
     
-    @Override public Map<String, Integer> sources(String target) {
+    @Override 
+    public Map<String, Integer> sources(String target) {
     	Map<String, Integer> result = new HashMap<>();
         for (Edge edge : edges) {
             if (edge.target().equals(target)) {
@@ -112,7 +110,8 @@ public class ConcreteEdgesGraph implements Graph<String> {
         return Collections.unmodifiableMap(result);
     }
     
-    @Override public Map<String, Integer> targets(String source) {
+    @Override 
+    public Map<String, Integer> targets(String source) {
     	 Map<String, Integer> result = new HashMap<>();
          for (Edge edge : edges) {
              if (edge.source().equals(source)) {
@@ -133,6 +132,15 @@ public class ConcreteEdgesGraph implements Graph<String> {
     
 }
 
+/* Rep Invariant:
+ source and target labels must be non-null.
+ weight must be non-negative.
+ 
+Safety from Rep Exposure:
+ Fields are private and final.
+ Class is immutable .
+*/
+
 /**
  * TODO specification
  * Immutable.
@@ -146,16 +154,15 @@ public class ConcreteEdgesGraph implements Graph<String> {
         private final String source;
         private final String target;
         private final int weight;
+   /*
 
-        // Abstraction function:
-        //   AF(source, target, weight) = an edge from 'source' to 'target' with the specified 'weight'.
+        Representation invariant:
+          - source and target are non-null.
+          - weight is non-negative.
 
-        // Representation invariant:
-        //   - source and target are non-null.
-        //   - weight is non-negative.
-
-        // Safety from rep exposure:
-        //   - All fields are private, final, and immutable.
+        Safety from rep exposure:
+        All fields are private, final, and immutable.
+        */
 
         // Constructor
         public Edge(String source, String target, int weight) {
@@ -165,15 +172,16 @@ public class ConcreteEdgesGraph implements Graph<String> {
             this.source = source;
             this.target = target;
             this.weight = weight;
-            checkRep();
+            confirmrep();
         }
 
-        // Check representation invariant
-        private void checkRep() {
+        private void confirmrep() {
+        	//confirmation
             assert source != null;
             assert target != null;
             assert weight >= 0;
         }
+        //class method functions
 
         public String source() {
             return source;
@@ -188,7 +196,7 @@ public class ConcreteEdgesGraph implements Graph<String> {
         }
 
         @Override
-        public String toString() {
+        public String toString() {//use java string concatenation
             return source + " -> " + target + " (weight: " + weight + ")";
         }
 
