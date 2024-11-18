@@ -3,11 +3,14 @@
  */
 package poet;
 
+
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.List;
+import java.util.Map;
 
 import graph.Graph;
-
 /**
  * A graph-based poetry generator.
  * 
@@ -38,7 +41,7 @@ import graph.Graph;
  * single space.
  * 
  * <p>For example, given this corpus:
- * <pre>    This is a test of the Mugar Omni Theater sound system.    </pre>
+ * <pre>    This is a test of the Mugar Omni Theater sound system.  </pre>
  * <p>on this input:
  * <pre>    Test the system.    </pre>
  * <p>the output poem would be:
@@ -55,23 +58,48 @@ public class GraphPoet {
     private final Graph<String> graph = Graph.empty();
     
     // Abstraction function:
-    //   TODO
+    //   The graph represents a word affinity graph, where vertices are unique words from the corpus, 
+    //   and edges represent adjacency counts between words (edge weights).
     // Representation invariant:
-    //   TODO
+    //   - All vertices in the graph are non-empty, non-null strings.
+    //   - Edge weights are positive integers.
     // Safety from rep exposure:
-    //   TODO
+    //   - The graph field is private and final, and its references are not exposed.
     
     /**
-     * Create a new poet with the graph from corpus (as described above).
-     * 
+     * Create a new poet with the graph from the given corpus.
+     *
      * @param corpus text file from which to derive the poet's affinity graph
      * @throws IOException if the corpus file cannot be found or read
      */
     public GraphPoet(File corpus) throws IOException {
-        throw new RuntimeException("not implemented");
+        List<String> lines = Files.readAllLines(corpus.toPath());
+        String content = String.join(" ", lines);//concatenate all lines in a single string as pre-condition of buildGraoh()
+        buildGraph(content);
+        checkRep();
     }
     
-    // TODO checkRep
+    private void buildGraph(String content) {
+        String[] words = content.toLowerCase().split("\\s+"); // separate words to build corpus
+        for (int i = 0; i < words.length - 1; i++) {
+        	//adjacent words
+            String word1 = words[i];
+            String word2 = words[i + 1];
+            graph.add(word1);
+            graph.add(word2);
+            int currentWeight = graph.set(word1, word2, 0);
+            graph.set(word1, word2, currentWeight + 1);
+        }
+    }
+    
+    private void checkRep() {
+        for (String vertex : graph.vertices()) {
+            assert vertex != null && !vertex.isEmpty();
+            for (Map.Entry<String, Integer> edge : graph.targets(vertex).entrySet()) {
+                assert edge.getValue() > 0;
+            }
+        }
+    }
     
     /**
      * Generate a poem.
@@ -80,9 +108,46 @@ public class GraphPoet {
      * @return poem (as described above)
      */
     public String poem(String input) {
-        throw new RuntimeException("not implemented");
+        String[] words = input.split("\\s+");
+        StringBuilder poem = new StringBuilder();//mutable string object to allow bridge word addition
+        
+        for (int i = 0; i < words.length - 1; i++) {
+            String word1 = words[i];
+            String word2 = words[i + 1];
+            String bridge = findBridgeWord(word1.toLowerCase(), word2.toLowerCase());
+            poem.append(word1).append(" ");
+            if (bridge != null) {
+                poem.append(bridge).append(" ");
+            }
+        }
+        poem.append(words[words.length - 1]); // add adjacent word to complete the string
+        
+        return poem.toString();
+    }
+    private String findBridgeWord(String word1, String word2) {
+        String bestBridge = null;
+        int maxWeight = 0;
+        
+        Map<String, Integer> targets = graph.targets(word1);// Get all direct neighbors of word1 along with their weights
+        for (Map.Entry<String, Integer> entry : targets.entrySet()) {
+            String candidate = entry.getKey();
+            int weight1 = entry.getValue();
+         // Check if there is an edge from the candidate to word2
+            int weight2 = graph.targets(candidate).getOrDefault(word2, 0);
+            int totalWeight = weight1 + weight2;
+            
+            if (weight2 > 0 && totalWeight > maxWeight) {//altering best bridge word found
+                maxWeight = totalWeight;
+                bestBridge = candidate;
+            }
+        }
+        return bestBridge;
     }
     
     // TODO toString()
+    @Override
+    public String toString() {//helper function
+        return "GraphPoet: " + graph.toString();
+    }
     
 }
